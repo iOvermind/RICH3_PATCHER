@@ -1,6 +1,7 @@
 original/
 patched/
 build/
+dist/
 16.pat
 
 # Python 產生的垃圾
