@@ -196,7 +196,8 @@ def main():
                     (bytes.fromhex("83 7E EA 06 74 10"), bytes.fromhex("83 7E EA 06 EB 10")),
                     (bytes.fromhex("0A FF 75 08"), bytes.fromhex("0A FF 90 90")), # 如果有人手動改過了，順便修好
                     (bytes.fromhex("E8 BB 03 EB 2F"), bytes.fromhex("B0 ED 90 EB 2F")),
-                    (bytes.fromhex("56 11 02 00 3A 5C"), bytes.fromhex("56 11 01 00 5C 5C"))
+                    (bytes.fromhex("56 11 02 00 3A 5C"), bytes.fromhex("56 11 01 00 5C 5C")),
+                    (bytes.fromhex("C4 7E 06 98 AB"), bytes.fromhex("C4 7E 06 90 AB"))
                 ]
             }
         ]
