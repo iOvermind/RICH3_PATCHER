@@ -4,6 +4,13 @@ import datetime
 import subprocess
 import re
 
+# 備份原始日曆檔 (防呆：只有在 .bak 不存在時才備份，避免重複執行覆蓋掉乾淨的備份)
+for cald_file in ['Cald.a', 'Cald.b']:
+    bak_file = f"{cald_file}.bak"
+    if os.path.exists(cald_file) and not os.path.exists(bak_file):
+        shutil.copy2(cald_file, bak_file)
+        print(f"📦 已安全備份原檔: {cald_file} -> {bak_file}")
+
 try:
     from lunar_python import Solar
 except ImportError:
