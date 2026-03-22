@@ -1,10 +1,10 @@
 @echo off
-:: 設定編碼為 UTF-8
+:: 設定編碼為 UTF-8 [cite: 1]
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 :: ==========================================
-:: 0. 基本設定 (既然用 SSH，就不用處理 AUTH_URL 了)
+:: 0. 基本設定
 :: ==========================================
 set REPO_NAME=RICH3_PATCHER
 
@@ -12,7 +12,7 @@ set REPO_NAME=RICH3_PATCHER
 :: 1. 選單介面
 :: ==========================================
 echo ==================================
-echo    🚀 Git 自動化助手 (家裡免密碼版)
+echo    🚀 Git 自動化助手 (家用除錯版)
 echo    💻 Repo: %REPO_NAME%
 echo ==================================
 echo 請選擇功能：
@@ -27,30 +27,31 @@ set /p choice="請輸入選項 [1/2]: "
 if "%choice%"=="1" (
     echo ----------------------------------
     echo ⬇️  正在拉取更新...
-    git pull origin main [cite: 8]
+    git pull origin main
     echo ✅ 下載完成！
 
 ) else if "%choice%"=="2" (
     echo ----------------------------------
     echo 📦 正在準備上傳程序...
 
-    :: 檢查是否有 Python 環境 [cite: 5]
-    :: 這裡幫你優化了一下：過濾掉本地絕對路徑，避免 requirements.txt 變髒
-    if exist "requirements.txt" (
-        echo 🐍 偵測到 Python 環境，更新 requirements.txt...
-        pip freeze | findstr /v "file:///" > requirements.txt 2>nul [cite: 5]
-    ) else if exist ".venv\" (
-        echo 🐍 偵測到 Python 環境，更新 requirements.txt...
-        pip freeze | findstr /v "file:///" > requirements.txt 2>nul [cite: 5]
+    :: 檢查 pip 是否存在並優化輸出 [cite: 5]
+    where pip >nul 2>nul
+    if !errorlevel! equ 0 (
+        if exist "requirements.txt" (
+            echo 🐍 偵測到 Python 環境，更新 requirements.txt...
+            :: 使用 python -m pip 避免環境變數路徑衝突，並移除 file:/// 絕對路徑
+            python -m pip freeze | findstr /v "file:///" > requirements.txt
+        )
     )
 
     :: 加入所有變更
     git add .
-    set /p input_msg="請輸入 Commit 訊息 (Enter 自動填時戳): " [cite: 6]
+    set /p input_msg="請輸入 Commit 訊息 (Enter 自動填時戳): "
     
     if "!input_msg!"=="" (
-        for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value') do set dt=%%I
-        set commit_msg=Auto update: !dt:~0,4!-!dt:~4,2!-!dt:~6,2! !dt:~8,2!:!dt:~10,2!:!dt:~12,2! [cite: 6]
+        :: 捨棄會噴磁碟錯誤的 wmic，改用 PowerShell 抓時間 [cite: 6]
+        for /f "usebackq" %%i in (`powershell -NoProfile -Command "Get-Date -Format 'yyyy-MM-dd HH:mm:ss'"`) do set dt=%%i
+        set commit_msg=Auto update: !dt!
     ) else (
         set commit_msg=!input_msg!
     )
@@ -58,16 +59,17 @@ if "%choice%"=="1" (
     :: 檢查是否有變更 [cite: 7]
     git diff --quiet && git diff --staged --quiet
     if !errorlevel! equ 0 (
-        echo ⚠️  沒有偵測到變更，跳過提交... [cite: 7]
+        echo ⚠️  沒有偵測到變更，跳過提交...
     ) else (
         git commit -m "!commit_msg!"
         echo ☁️  正在推送到 GitHub...
-        git push origin main [cite: 8]
+        :: 強制使用 origin main 推送 [cite: 8, 9]
+        git push origin main
         
         if !errorlevel! equ 0 (
-            echo ✅ 上傳搞定！收工！ [cite: 9]
+            echo ✅ 上傳搞定！收工！
         ) else (
-            echo ❌ 上傳失敗！可能是遠端有新內容，請先執行 [1] 下載更新。 [cite: 9]
+            echo ❌ 上傳失敗！請檢查網路或遠端衝突。
         )
     )
 
