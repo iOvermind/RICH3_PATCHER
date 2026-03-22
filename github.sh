@@ -26,15 +26,15 @@ echo "  [2] ⬆️  上傳備份 (Push)"
 echo "=================================="
 read -p "請輸入選項 [1/2]: " choice
 
-# 🌟 新增：SSH 查勤與自動討密碼機制
-    # 用 ssh-add -l 檢查目前有沒有活著的鑰匙
-    ssh-add -l >/dev/null 2>&1
+# 🌟 終極 SSH 查勤：不要相信管家，直接戳 GitHub 測試連線！
+    ssh -T -o BatchMode=yes git@github.com 2>&1 | grep -q "successfully authenticated"
     if [ $? -ne 0 ]; then
-        echo "⏳ 偵測到 SSH 鑰匙已上鎖或逾時！"
-        echo "🔐 請輸入密碼解鎖 (將自動為您記住 1 小時)："
+        echo "⏳ 偵測到 SSH 鑰匙已上鎖或管家卡陰！"
+        echo "🧹 正在強制清除管家殘留的智障記憶..."
+        ssh-add -D >/dev/null 2>&1
+        echo "🔐 請重新輸入密碼解鎖 (將自動為您記住 1 小時)："
         ssh-add -t 3600 ~/.ssh/id_ed25519
         
-        # 如果密碼打錯或按取消，就直接中斷腳本，不要往下跑去撞牆
         if [ $? -ne 0 ]; then
             echo "❌ 解鎖失敗！腳本終止。"
             exit 1
