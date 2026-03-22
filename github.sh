@@ -36,7 +36,7 @@ elif [ "$choice" == "2" ]; then
     echo "----------------------------------"
     echo "📦 正在準備上傳程序..."
 
-    # 檢查並更新 requirements.txt (過濾掉本地絕對路徑)
+    # 檢查並更新 requirements.txt
     if [ -f "requirements.txt" ] || [ -d ".venv" ]; then
         echo "🐍 偵測到 Python 環境，更新 requirements.txt..."
         pip freeze | grep -v "file:///" > requirements.txt 2>/dev/null
@@ -44,28 +44,29 @@ elif [ "$choice" == "2" ]; then
 
     # 加入所有變更
     git add .
-    read -p "請輸入 Commit 訊息 (直接 Enter 自動填時戳): " input_msg
     
-    if [ -z "$input_msg" ]; then
-        dt=$(date +"%Y-%m-%d %H:%M:%S")
-        commit_msg="Auto update: $dt"
+    # 🌟 修正點：把 Commit 跟 Push 的判斷完全拆開
+    if [ -z "$(git status --porcelain)" ]; then
+        echo "⚠️  工作區沒有新變更，跳過 Commit 步驟..."
     else
-        commit_msg="$input_msg"
+        read -p "請輸入 Commit 訊息 (直接 Enter 自動填時戳): " input_msg
+        if [ -z "$input_msg" ]; then
+            dt=$(date +"%Y-%m-%d %H:%M:%S")
+            commit_msg="Auto update: $dt"
+        else
+            commit_msg="$input_msg"
+        fi
+        git commit -m "$commit_msg"
     fi
 
-    # 🌟 改用 git status 檢查是否有變更，這招對剛 init 的全新專案才有效
-    if [ -z "$(git status --porcelain)" ]; then
-        echo "⚠️  沒有偵測到變更，跳過提交..."
+    # 不管剛剛有沒有 Commit，最後都強制推送到遠端檢查一下！
+    echo "☁️  正在推送到 GitHub..."
+    git push "$REPO_URL" main
+    
+    if [ $? -eq 0 ]; then
+        echo "✅ 上傳搞定！收工！"
     else
-        git commit -m "$commit_msg"
-        echo "☁️  正在推送到 GitHub..."
-        git push "$REPO_URL" main
-        
-        if [ $? -eq 0 ]; then
-            echo "✅ 上傳搞定！收工！"
-        else
-            echo "❌ 上傳失敗！如果這是全新的資料夾，你可能需要先執行 [1] 把遠端檔案拉下來合併。"
-        fi
+        echo "❌ 上傳失敗！請檢查網路或遠端是否有衝突。"
     fi
 
 else
