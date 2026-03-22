@@ -1,0 +1,19 @@
+original\
+patched\
+16.pat
+
+# Python 產生的垃圾
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 遊戲原始檔案 (建議不要上傳，避免版權糾紛)
+*.MKF
+*.EXE
+*.PAT
+*.a
+*.b
+
+# 虛擬環境
+venv/
+.venv/
