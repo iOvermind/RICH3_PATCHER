@@ -13,6 +13,7 @@ __pycache__/
 *.PAT
 *.a
 *.b
+*.bmp
 
 # 虛擬環境
 venv/

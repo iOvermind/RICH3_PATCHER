@@ -6,7 +6,7 @@
 GIT_USER="iOvermind"
 # 確保這裡的路徑跟你「拉過去」的位置一致
 ENC_FILE="./tokens/.git-token.enc" 
-REPO_PATH="github.com/iOvermind/TYM_OP"
+REPO_PATH="github.com/iOvermind/RICH3_PATCHER"
 
 # 檢查加密檔是否存在
 if [ ! -f "$ENC_FILE" ]; then
