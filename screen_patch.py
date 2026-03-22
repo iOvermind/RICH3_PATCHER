@@ -1,8 +1,17 @@
 import os
 import re
-import glob
+import shutil
 from PIL import Image
 
+# =====================================================================
+# 大富翁3 專屬 16 色色板 (16.PAT)
+# =====================================================================
+PALETTE_HEX = "00 00 00 1C 06 01 2B 16 10 3C 26 21 3F 33 2E 3E 3E 3E 31 31 31 19 19 19 00 00 2B 00 2F 37 00 12 00 00 27 00 2F 0C 33 38 00 00 3F 3D 00 1E 22 27"
+GAME_PALETTE = bytes.fromhex(PALETTE_HEX.replace(" ", ""))
+
+# =====================================================================
+# 壓縮核心邏輯 (保留給未來如果需要 BMP 轉檔時使用)
+# =====================================================================
 def get_grouped_planar(blocks):
     c = len(blocks)
     res = bytearray(c * 4)
@@ -136,28 +145,37 @@ def compress_smkf(bmp_path):
 
 
 # =====================================================================
-# 新增功能區
+# 一條龍補丁注入區
 # =====================================================================
-
-def export_to_bin(bmp_path, out_bin_path):
-    """目標 1：將單一 BMP 壓縮成 .bin 格式，用來上傳 GitHub"""
-    print(f"[{bmp_path}] 正在壓制為 SMKF 二進位檔...")
-    encoded = compress_smkf(bmp_path)
-    with open(out_bin_path, 'wb') as f:
-        f.write(encoded)
-    print(f"爽啦！ {out_bin_path} 產生完畢，大小: {len(encoded)} bytes。直接把這個推上 repo 就對了！")
-
-
-def batch_patch_mkf(orig_mkf_path, patch_dir, out_mkf_path):
-    """目標 2：自動掃描資料夾，把所有 .bmp 或 .bin 批次塞回 MKF"""
-    if not os.path.exists(orig_mkf_path):
-        print(f"靠背，找不到原始檔 {orig_mkf_path}！")
+def auto_patch_mkf():
+    # 1. 不分大小寫尋找當前目錄下的 screen.mkf
+    orig_mkf_path = None
+    for f in os.listdir('.'):
+        if f.lower() == 'screen.mkf':
+            orig_mkf_path = f
+            break
+            
+    if not orig_mkf_path:
+        print("靠背，當前目錄找不到 SCREEN.MKF 啦！請確認檔案位置。")
         return
 
+    # 2. 不分大小寫尋找 ./screen 資料夾
+    patch_dir = None
+    for d in os.listdir('.'):
+        if os.path.isdir(d) and d.lower() == 'screen':
+            patch_dir = d
+            break
+
+    if not patch_dir:
+        print("沒找到 screen 資料夾，幫你建一個。請把 .bin 檔丟進去後再來跑一次！")
+        os.makedirs("screen")
+        return
+
+    print(f"[{orig_mkf_path}] 檔案讀取中...")
     with open(orig_mkf_path, 'rb') as f:
         data = f.read()
 
-    # 解析原始 MKF
+    # 3. 解析原始 MKF 偏移量
     mkf_len = len(data)
     offsets = []
     curr = 0
@@ -172,70 +190,63 @@ def batch_patch_mkf(orig_mkf_path, patch_dir, out_mkf_path):
     for i in range(len(offsets) - 1):
         chunks.append(data[offsets[i]:offsets[i+1]])
 
-    if not os.path.exists(patch_dir):
-        os.makedirs(patch_dir)
-        print(f"幫你建了 {patch_dir} 資料夾，把補丁丟進去再跑一次吧！")
-        return
+    # 4. 撈出所有 .bin 檔並嚴格照數字排序
+    bin_files = []
+    for f in os.listdir(patch_dir):
+        if f.lower().endswith('.bin') and re.search(r'screen_(\d+)', f.lower()):
+            bin_files.append(os.path.join(patch_dir, f))
 
-    # 找尋所有 screen_XX.bmp 和 screen_XX.bin
-    patch_files = glob.glob(os.path.join(patch_dir, "screen_*.*"))
+    def extract_num(filepath):
+        match = re.search(r'screen_(\d+)', filepath.lower())
+        return int(match.group(1)) if match else 0
+
+    bin_files.sort(key=extract_num)
     patch_count = 0
 
-    for p_file in patch_files:
-        ext = p_file.lower().split('.')[-1]
-        if ext not in ['bmp', 'bin']:
+    # 5. 開始注入
+    for p_file in bin_files:
+        target_idx = extract_num(p_file) - 1
+        if target_idx < 0 or target_idx >= len(chunks):
+            print(f"[警告] {p_file} 編號超過 MKF 極限 (目前只有 {len(chunks)} 張)，跳過。")
             continue
 
-        match = re.search(r'screen_(\d+)', p_file.lower())
-        if not match:
-            continue
+        print(f"  -> 正在注入: {os.path.basename(p_file)} (替換索引: {target_idx + 1})")
+        with open(p_file, 'rb') as f:
+            new_chunk = f.read()
             
-        target_idx = int(match.group(1)) - 1
-        if target_idx >= len(chunks):
-            print(f"[警告] {p_file} 編號超過 MKF 極限，跳過。")
-            continue
-
-        print(f"正在注入補丁: {os.path.basename(p_file)} (替換索引: {target_idx + 1})...")
-        if ext == 'bmp':
-            new_chunk = compress_smkf(p_file)
-        else: # bin
-            with open(p_file, 'rb') as f:
-                new_chunk = f.read()
-                
         chunks[target_idx] = new_chunk
         patch_count += 1
 
     if patch_count == 0:
-        print(f"資料夾 {patch_dir} 裡面空空如也，沒戲唱。")
+        print(f"資料夾 {patch_dir} 裡面沒有符合條件的 .bin 檔，白忙一場。")
         return
 
-    # 重新計算並寫入 MKF
+    # 6. 備份機制：如果原本就已經有 .bak，會先刪掉再備份，避免 Windows 報錯
+    bak_path = orig_mkf_path + '.bak'
+    if os.path.exists(bak_path):
+        os.remove(bak_path)
+    os.rename(orig_mkf_path, bak_path)
+    print(f"\n[備份] 已將原檔安全備份為: {bak_path}")
+
+    # 7. 重新計算 Header 並寫入全新 MKF (檔名保持與原檔相同大小寫)
+    out_mkf_path = orig_mkf_path
     N = len(chunks)
     current_offset = (N + 1) * 4
     new_offsets = []
+    
     for chunk in chunks:
         new_offsets.append(current_offset)
         current_offset += len(chunk)
     new_offsets.append(current_offset)
 
-    print(f"正在重組 {out_mkf_path}...")
+    print(f"[封裝] 正在重組全新的 {out_mkf_path}...")
     with open(out_mkf_path, 'wb') as f:
         for off in new_offsets:
             f.write(off.to_bytes(4, byteorder='little'))
         for chunk in chunks:
             f.write(chunk)
             
-    print(f"重組完成！共貫穿了 {patch_count} 張圖。趕快丟進遊戲測試！")
+    print(f"爽啦！重組完成。共貫穿了 {patch_count} 張畫面。趕快開遊戲看看會不會當機！")
 
 if __name__ == "__main__":
-    # =========================================================
-    # 使用範例 (把你想執行的那行註解拿掉就好)
-    # =========================================================
-
-    # 1. 把改好的圖轉成 bin 準備上傳 GitHub (目標 1)
-    export_to_bin("SCREEN_19.bmp", "screen_19.bin")
-
-    # 2. 一次把資料夾內所有的補丁(.bmp或.bin)壓進 MKF 裡 (目標 2)
-    # 記得先建立一個叫 Patch_Screens 的資料夾，把補丁丟進去
-    # batch_patch_mkf("SCREEN.MKF", "Patch_Screens", "SCREEN_NEW.MKF")
-    pass
+    auto_patch_mkf()
