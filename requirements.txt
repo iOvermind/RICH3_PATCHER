@@ -3,6 +3,7 @@ aiohappyeyeballs==2.6.1
 aiohttp==3.13.3
 aiohttp_socks==0.11.0
 aiosignal==1.4.0
+altgraph==0.17.5
 annotated-doc==0.0.4
 anyio==4.12.1
 attrs==25.4.0
@@ -37,15 +38,19 @@ multidict==6.7.1
 numpy==2.4.3
 opencv-python==4.13.0.92
 packaging==26.0
+pefile==2024.8.26
 pillow==12.1.1
 propcache==0.4.1
 pycparser==3.0
 pycryptodome==3.23.0
 PyGithub==2.8.1
 Pygments==2.19.2
+pyinstaller==6.19.0
+pyinstaller-hooks-contrib==2026.3
 PyJWT==2.12.1
 PyNaCl==1.6.2
 python-socks==2.8.1
+pywin32-ctypes==0.2.3
 PyYAML==6.0.3
 referencing==0.37.0
 regex==2026.2.28
@@ -53,6 +58,7 @@ requests==2.32.5
 rich==14.3.3
 rpds-py==0.30.0
 safetensors==0.7.0
+setuptools==82.0.1
 shellingham==1.5.4
 smmap==5.0.3
 tokenizers==0.22.2

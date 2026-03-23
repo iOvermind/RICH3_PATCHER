@@ -1,27 +1,26 @@
 @echo off
-chcp 65001 >nul
 echo ==================================
-echo   📦 大富翁 3 Patch 自動打包程式
+echo   [+] Richman 3 Patch Builder
 echo ==================================
 
-:: 1. 清理舊的編譯檔案，確保每次都是乾淨打包
-echo 🧹 正在清理舊的暫存檔...
+:: 1. Clean old files
+echo [*] Cleaning old temp files...
 if exist "build" rmdir /s /q "build"
 if exist "dist" rmdir /s /q "dist"
 if exist "run_all.spec" del /q "run_all.spec"
 if exist "rich3_patch.spec" del /q "rich3_patch.spec"
 
-:: 2. 執行打包指令
-echo 🚀 開始將腳本與資料夾打包成單一 EXE...
-pyinstaller --noconsole --onefile --name rich3_patch --icon=icon.png --add-data "EVENTVOC;EVENTVOC" --add-data "NEWSVOC;NEWSVOC" --add-data "SCREEN;SCREEN" run_all.py
+:: 2. Build EXE
+echo [*] Building EXE...
+python -m PyInstaller --noconsole --onefile --name rich3_patch --icon=icon.png --add-data "EVENTVOC;EVENTVOC" --add-data "NEWSVOC;NEWSVOC" --add-data "SCREEN;SCREEN" run_all.py
 
-:: 3. 檢查結果
+:: 3. Check result
 if %errorlevel% equ 0 (
     echo.
-    echo ✅ 打包成功！請去 dist 資料夾裡面拿你的 rich3_patch.exe！
+    echo [OK] Build SUCCESS! Check the 'dist' folder.
 ) else (
     echo.
-    echo ❌ 靠背，打包失敗！請往上捲看噴了什麼錯。
+    echo [ERROR] Build FAILED! Check the error messages above.
 )
 
 echo.
