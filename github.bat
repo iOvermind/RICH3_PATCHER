@@ -5,9 +5,9 @@ setlocal enabledelayedexpansion
 :: ==========================================
 :: 0. 基本設定
 :: ==========================================
-set REPO_NAME=RICH3_PATCHER
+set REPO_NAME=RICH3_PATCH
 :: 🔑 直接把 SSH 遠端網址寫死在這裡
-set REPO_URL=git@github.com:iOvermind/RICH3_PATCHER.git
+set REPO_URL=git@github.com:iOvermind/RICH3_PATCH.git
 
 echo ==================================
 echo    🚀 Git 自動化助手 (Windows 家用版)
