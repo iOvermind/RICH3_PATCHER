@@ -1,9 +1,9 @@
 #!/bin/bash
 # 設定編碼 (Linux 預設通常已是 UTF-8)
 
-REPO_NAME="RICH3_PATCHER"
+REPO_NAME="RICH3_PATCH"
 # 🔑 直接把 SSH 遠端網址寫死在這裡
-REPO_URL="git@github.com:iOvermind/RICH3_PATCHER.git"
+REPO_URL="git@github.com:iOvermind/RICH3_PATCH.git"
 
 echo "=================================="
 echo "   🚀 Git 自動化助手 (SSH 終極懶人版)"
