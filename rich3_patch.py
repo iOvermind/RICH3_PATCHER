@@ -198,15 +198,25 @@ def main():
                 "targets": [(bytes.fromhex("83 3E BC 00 02 74 03"), bytes.fromhex("83 3E BC 00 02 EB 03"))]
             },
             {
-                "name": "8-2. 破解光碟檢查 (其餘安全相容項)",
-                "targets": [
-                    (bytes.fromhex("83 7E EA 06 74 10"), bytes.fromhex("83 7E EA 06 EB 10")),
-                    (bytes.fromhex("0A FF 75 08"), bytes.fromhex("0A FF 90 90")), # 如果有人手動改過了，順便修好
-                    (bytes.fromhex("E8 BB 03 EB 2F"), bytes.fromhex("B0 ED 90 EB 2F")),
-                    (bytes.fromhex("56 11 02 00 3A 5C"), bytes.fromhex("56 11 01 00 5C 5C")),
-                    (bytes.fromhex("C4 7E 06 98 AB"), bytes.fromhex("C4 7E 06 90 AB"))
-                ]
-            }
+                "name": "8-2-1. 破解光碟檢查 (其餘安全相容項)",
+                "targets": [(bytes.fromhex("83 7E EA 06 74 10"), bytes.fromhex("83 7E EA 06 EB 10"))]
+            },
+            {
+                "name": "8-2-2. 破解光碟檢查 (其餘安全相容項)",
+                "targets": [(bytes.fromhex("0A FF 75 08"), bytes.fromhex("0A FF 90 90"))]
+            },
+            {
+                "name": "8-2-3. 破解光碟檢查 (其餘安全相容項)",
+                "targets": [(bytes.fromhex("E8 BB 03 EB 2F"), bytes.fromhex("B0 ED 90 EB 2F"))]
+            },
+            {
+                "name": "8-2-4. 破解光碟檢查 (其餘安全相容項)",
+                "targets": [(bytes.fromhex("56 11 02 00 3A 5C"), bytes.fromhex("56 11 01 00 5C 5C"))]
+            },
+            {
+                "name": "8-2-5. 破解光碟檢查 (其餘安全相容項)",
+                "targets": [(bytes.fromhex("C4 7E 06 98 AB"), bytes.fromhex("C4 7E 06 90 AB"))]
+            },
         ]
         
         patch_binary(exe_target, exe_patches)

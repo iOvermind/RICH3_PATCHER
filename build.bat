@@ -1,27 +1,51 @@
 @echo off
-chcp 65001 >nul
+setlocal enabledelayedexpansion
+
 echo ==================================
-echo   📦 大富翁 3 Patch 自動打包程式
+echo   [+] Richman 3 Patch Builder Pro
+echo   [+] Author: Overmind
 echo ==================================
 
-:: 1. 清理舊的編譯檔案，確保每次都是乾淨打包
-echo 🧹 正在清理舊的暫存檔...
+:: 1. 清理舊檔案
+echo [*] Cleaning old files...
 if exist "build" rmdir /s /q "build"
 if exist "dist" rmdir /s /q "dist"
-if exist "run_all.spec" del /q "run_all.spec"
 
-:: 2. 執行打包指令
-echo 🚀 開始將腳本與資料夾打包成單一 EXE...
-pyinstaller --onefile --icon=icon.png --add-data "EVENTVOC;EVENTVOC" --add-data "NEWSVOC;NEWSVOC" --add-data "SCREEN;SCREEN" run_all.py
+:: 2. 建立自簽憑證 (單獨呼叫 PowerShell)
+if not exist "Overmind.pfx" (
+    echo [*] Generating Certificate...
+    powershell -Command "$cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=Overmind' -KeyExportPolicy Exportable -KeySpec Signature -KeyLength 2048 -KeyAlgorithm RSA -HashAlgorithm SHA256 -NotAfter (Get-Date).AddYears(10) -CertStoreLocation 'Cert:\CurrentUser\My'; $pwd = ConvertTo-SecureString -String 'overmind' -Force -AsPlainText; Export-PfxCertificate -Cert $cert -FilePath '.\Overmind.pfx' -Password $pwd"
+    echo [OK] Overmind.pfx created.
+)
 
-:: 3. 檢查結果
-if %errorlevel% equ 0 (
-    echo.
-    echo ✅ 打包成功！請去 dist 資料夾裡面拿你的 run_all.exe！
+:: 3. 打包 EXE
+echo [*] Building EXE with PyInstaller...
+:: 這裡加上了 --version-file 和 --uac-admin (改寫檔案需要管理員權限)
+python -m PyInstaller --noconsole --onefile ^
+    --name rich3_patch ^
+    --icon=icon.png ^
+    --version-file=file_version_info.txt ^
+    --add-data "EVENTVOC;EVENTVOC" ^
+    --add-data "NEWSVOC;NEWSVOC" ^
+    --add-data "SCREEN;SCREEN" ^
+    run_all.py
+
+if %errorlevel% neq 0 (
+    echo [ERROR] PyInstaller failed! 屁啦，檢查一下 Python 套件。
+    pause
+    exit /b
+)
+
+:: 4. 數位簽章 (直接使用你找到的路徑)
+echo [*] Signing the executable...
+set "SIGNTOOL=C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe"
+
+if exist "%SIGNTOOL%" (
+    "%SIGNTOOL%" sign /f "Overmind.pfx" /p "overmind" /fd SHA256 /t http://timestamp.digicert.com /v "dist\rich3_patch.exe"
 ) else (
-    echo.
-    echo ❌ 靠背，打包失敗！請往上捲看噴了什麼錯。
+    echo [WARN] 找不到 signtool.exe，跳過簽章。
 )
 
 echo.
+echo [DONE] 完工！請到 dist 資料夾查看 rich3_patch.exe
 pause
