@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('EVENTVOC', 'EVENTVOC'), ('NEWSVOC', 'NEWSVOC'), ('SCREEN', 'SCREEN')],
+    datas=[('icon.png', '.'), ('EVENTVOC', 'EVENTVOC'), ('NEWSVOC', 'NEWSVOC'), ('SCREEN', 'SCREEN')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

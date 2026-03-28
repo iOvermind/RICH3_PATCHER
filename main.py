@@ -26,7 +26,7 @@ except ImportError:
 # 全域 UI 變數與 Log 系統
 # =====================================================================
 ui_root = None
-ui_label = None
+ui_log_text = None
 ui_progress = None
 
 
@@ -42,8 +42,11 @@ def emit_log(msg, step=None, status="INFO"):
     print(f"[{status}]{step_tag} {msg}", flush=True)
 
     # 讓 UI 即時更新
-    if ui_root and ui_label:
-        ui_label.config(text=msg)
+    if ui_root and ui_log_text:
+        ui_log_text.config(state=tk.NORMAL)          # 開啟編輯模式
+        ui_log_text.insert(tk.END, f"[{status}] {msg}\n")  # 插入新訊息到最後一行
+        ui_log_text.see(tk.END)                      # 自動滾動到最底下
+        ui_log_text.config(state=tk.DISABLED)        # 鎖定編輯模式 (唯讀)
         if step:
             ui_progress['value'] = (step / TOTAL_STEPS) * 100
         ui_root.update()
@@ -425,9 +428,21 @@ def main():
     ui_root = tk.Tk()
     ui_root.title("大富翁3 Patch")
     
+    # 設定視窗圖示 (icon.png)
+    try:
+        # 考慮到 PyInstaller 釋放路徑
+        base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+        icon_path = os.path.join(base_path, "icon.png")
+        if os.path.exists(icon_path):
+            img = Image.open(icon_path)
+            photo = tk.PhotoImage(file=icon_path) # 或者用 ImageTk
+            ui_root.iconphoto(True, photo)
+    except Exception as e:
+        print(f"[WARN] 載入圖示失敗，算了不影響功能: {e}")
+
     # 設定視窗大小與畫面置中
-    window_width = 450
-    window_height = 120
+    window_width = 480
+    window_height = 280
     screen_width = ui_root.winfo_screenwidth()
     screen_height = ui_root.winfo_screenheight()
     x_cordinate = int((screen_width/2) - (window_width/2))
@@ -437,13 +452,22 @@ def main():
     # 禁止縮放
     ui_root.resizable(False, False)
 
-    # 狀態文字
-    ui_label = tk.Label(ui_root, text="準備開始載入資源...", font=("微軟正黑體", 10))
-    ui_label.pack(pady=15)
-
     # 進度條
     ui_progress = ttk.Progressbar(ui_root, orient="horizontal", length=380, mode="determinate")
-    ui_progress.pack(pady=5)
+    ui_progress.pack(pady=(15, 10))
+
+    # 建立滾動文字框的 Frame
+    log_frame = tk.Frame(ui_root)
+    log_frame.pack(padx=15, pady=(0, 15), fill=tk.BOTH, expand=True)
+
+    # 卷軸與 Text 元件
+    scrollbar = ttk.Scrollbar(log_frame)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+    global ui_log_text
+    ui_log_text = tk.Text(log_frame, font=("微軟正黑體"), yscrollcommand=scrollbar.set, state=tk.DISABLED, bg="#F0F0F0")
+    ui_log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    scrollbar.config(command=ui_log_text.yview)
 
     # 設定 0.5 秒後自動開始跑魔改邏輯，讓 UI 有時間先畫出來
     ui_root.after(500, run_patch)

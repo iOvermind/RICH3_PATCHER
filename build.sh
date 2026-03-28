@@ -23,10 +23,11 @@ fi
 
 # 3. 打包 EXE (透過 Wine 呼叫，並將進入點改為 main.py)
 echo "[*] Building EXE with PyInstaller..."
-wine python -m PyInstaller --noconsole --onefile \
+wine python -m PyInstaller --noconsole --onefile --clean \
     --name rich3_patch \
     --icon=icon.png \
     --version-file=file_version_info.txt \
+    --add-data "icon.png;." \
     --add-data "EVENTVOC;EVENTVOC" \
     --add-data "NEWSVOC;NEWSVOC" \
     --add-data "SCREEN;SCREEN" \
