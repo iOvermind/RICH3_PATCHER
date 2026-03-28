@@ -16,12 +16,12 @@ VSVersionInfo(
       StringTable(
         u'040904B0',
         [StringStruct(u'CompanyName', u'Overmind'),
-        StringStruct(u'FileDescription', u'大富翁3 Patcher'),
+        StringStruct(u'FileDescription', u'大富翁3 Patch'),
         StringStruct(u'FileVersion', u'1.0.0'),
         StringStruct(u'InternalName', u'rich3_patch'),
         StringStruct(u'LegalCopyright', u'Copyright (c) 2026 Overmind. All rights reserved.'),
         StringStruct(u'OriginalFilename', u'rich3_patch.exe'),
-        StringStruct(u'ProductName', u'Richman 3 Sustainable Patcher'),
+        StringStruct(u'ProductName', u'Rich3 Patch'),
         StringStruct(u'ProductVersion', u'1.0.0')])
       ]), 
     VarFileInfo([VarStruct(u'Translation', [1028, 950])]) # 設定為繁體中文編碼

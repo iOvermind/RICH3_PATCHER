@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['run_all.py'],
+    ['main.py'],
     pathex=[],
     binaries=[],
     datas=[('EVENTVOC', 'EVENTVOC'), ('NEWSVOC', 'NEWSVOC'), ('SCREEN', 'SCREEN')],
