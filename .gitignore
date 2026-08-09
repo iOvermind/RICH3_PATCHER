@@ -11,6 +11,9 @@ __pycache__/
 *$py.class
 
 # 遊戲原始檔案 (建議不要上傳，避免版權糾紛)
+# rich3/ 是 oracle 比對用的未修改遊戲目錄，整個排除——底下的 .pvs / .blk / .fon
+# 與小寫的 Rich3.exe 不會被下面的副檔名規則擋住。
+rich3/
 *.MKF
 *.EXE
 *.PAT
